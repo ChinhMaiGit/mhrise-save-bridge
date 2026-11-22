@@ -27,7 +27,10 @@ def make_backup(save_dir):
     """Copy the whole target folder to a timestamped folder; returns its path."""
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     target = backup_root() / stamp
-    shutil.copytree(src = save_dir, dst = target)
+    shutil.copytree(
+        src = save_dir,
+        dst = target,
+    )
     return target
 
 

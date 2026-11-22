@@ -42,10 +42,16 @@ def _load(directory, name, steam_id64):
     path = Path(directory) / name
     if not path.is_file():
         raise OperationError(f"missing file: {path}")
-    opened = container.open_save(data = path.read_bytes(), steam_id64 = steam_id64)
+    opened = container.open_save(
+        data = path.read_bytes(),
+        steam_id64 = steam_id64,
+    )
     if not opened.hashes_ok:
         raise OperationError(f"{path}: block checksums fail, the save looks damaged")
-    return opened, stream.parse(data = opened.payload, origin = opened.origin)
+    return opened, stream.parse(
+        data = opened.payload,
+        origin = opened.origin,
+    )
 
 
 def _existing_slots(save_dir):
@@ -65,7 +71,11 @@ def inspect(directory, steam_id64):
     if kind == "pc" and steam_id64 is None:
         rows.append("PC saves are encrypted: pass --steamid64 (or point at the userdata folder).")
         return rows
-    _, system = _load(directory = directory, name = SYSTEM_FILE, steam_id64 = steam_id64)
+    _, system = _load(
+        directory = directory,
+        name = SYSTEM_FILE,
+        steam_id64 = steam_id64,
+    )
     for number, info in enumerate(slots.summaries(system_entries = system), start = 1):
         state = f"{info.name!r}  HR {info.hunter_rank}  MR {info.master_rank}" if info.used else "(empty)"
         have = "file present" if (directory / slot_file(slot = number)).is_file() else "no slot file"
@@ -76,7 +86,11 @@ def inspect(directory, steam_id64):
 # ---- convert
 def plan_convert(switch_dir, pc_dir, steam_id64, target_slot, switch_slot, force, guid = None):
     switch_dir, pc_dir = Path(switch_dir), Path(pc_dir)
-    _, switch_system = _load(directory = switch_dir, name = SYSTEM_FILE, steam_id64 = None)
+    _, switch_system = _load(
+        directory = switch_dir,
+        name = SYSTEM_FILE,
+        steam_id64 = None,
+    )
     switch_open, switch_slot_entries = _load(
         directory = switch_dir,
         name = slot_file(slot = switch_slot),
@@ -84,7 +98,11 @@ def plan_convert(switch_dir, pc_dir, steam_id64, target_slot, switch_slot, force
     )
     if switch_open.origin != SWITCH_STREAM_ORIGIN:
         raise OperationError("the --switch-dir files are not Switch saves")
-    pc_system_open, pc_system = _load(directory = pc_dir, name = SYSTEM_FILE, steam_id64 = steam_id64)
+    pc_system_open, pc_system = _load(
+        directory = pc_dir,
+        name = SYSTEM_FILE,
+        steam_id64 = steam_id64,
+    )
     present = _existing_slots(save_dir = pc_dir)
     if not present:
         raise OperationError(
@@ -122,8 +140,20 @@ def plan_convert(switch_dir, pc_dir, steam_id64, target_slot, switch_slot, force
         guid = guid,
     )
     plan = Plan()
-    for name, entries in ((SYSTEM_FILE, new_system), (slot_file(slot = target_slot), new_slot)):
-        payload = stream.encode(entries = entries, origin = PC_STREAM_ORIGIN)
+    for name, entries in (
+        (
+            SYSTEM_FILE,
+            new_system,
+        ),
+        (
+            slot_file(slot = target_slot),
+            new_slot,
+        ),
+    ):
+        payload = stream.encode(
+            entries = entries,
+            origin = PC_STREAM_ORIGIN,
+        )
         plan.payloads[name] = payload
         plan.files[name] = container.pack_pc(
             payload = payload,
@@ -145,14 +175,28 @@ def plan_transfer(pc_dir, steam_id64, from_slot, to_slot, groups):
     unknown = [g for g in groups if g not in TRANSFER_GROUPS]
     if unknown:
         raise OperationError(f"unknown group(s) {unknown}; choose from {sorted(TRANSFER_GROUPS)}")
-    _, donor = _load(directory = pc_dir, name = slot_file(slot = from_slot), steam_id64 = steam_id64)
-    target_open, target = _load(directory = pc_dir, name = slot_file(slot = to_slot), steam_id64 = steam_id64)
+    _, donor = _load(
+        directory = pc_dir,
+        name = slot_file(slot = from_slot),
+        steam_id64 = steam_id64,
+    )
+    target_open, target = _load(
+        directory = pc_dir,
+        name = slot_file(slot = to_slot),
+        steam_id64 = steam_id64,
+    )
     plan = Plan()
     out = target
     for group in groups:
         for class_hash in TRANSFER_GROUPS[group]:
-            donor_items = slots.find(entries = donor, class_hash = class_hash)
-            target_items = slots.find(entries = out, class_hash = class_hash)
+            donor_items = slots.find(
+                entries = donor,
+                class_hash = class_hash,
+            )
+            target_items = slots.find(
+                entries = out,
+                class_hash = class_hash,
+            )
             if not donor_items or len(donor_items) != len(target_items):
                 raise OperationError(f"{group}: slot layouts differ, nothing was changed")
             queue = iter(donor_items)
@@ -163,7 +207,10 @@ def plan_transfer(pc_dir, steam_id64, from_slot, to_slot, groups):
             )
         plan.notes.append(f"{group}: copied from slot {from_slot} to slot {to_slot}")
     name = slot_file(slot = to_slot)
-    payload = stream.encode(entries = out, origin = PC_STREAM_ORIGIN)
+    payload = stream.encode(
+        entries = out,
+        origin = PC_STREAM_ORIGIN,
+    )
     plan.payloads[name] = payload
     plan.files[name] = container.pack_pc(
         payload = payload,

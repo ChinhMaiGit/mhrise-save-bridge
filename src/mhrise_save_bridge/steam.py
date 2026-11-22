@@ -13,7 +13,10 @@ from mhrise_save_bridge.constants import (
 )
 
 # Process names whose presence means a save could be rewritten behind our back.
-WINDOWS_PROCESSES = ("steam.exe", "monsterhunterrise.exe")
+WINDOWS_PROCESSES = (
+    "steam.exe",
+    "monsterhunterrise.exe",
+)
 
 
 class SteamError(Exception):
@@ -27,11 +30,21 @@ def steam_roots():
         try:
             import winreg
 
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam") as key:
-                candidates.append(Path(winreg.QueryValueEx(key, "SteamPath")[0]))
+            with winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Valve\Steam",
+            ) as key:
+                steam_path = winreg.QueryValueEx(
+                    key,
+                    "SteamPath",
+                )[0]
+            candidates.append(Path(steam_path))
         except OSError:
             pass
-        for variable in ("ProgramFiles(x86)", "ProgramFiles"):
+        for variable in (
+            "ProgramFiles(x86)",
+            "ProgramFiles",
+        ):
             base = os.environ.get(variable)
             if base:
                 candidates.append(Path(base) / "Steam")
@@ -61,7 +74,14 @@ def save_dirs(root):
 def normalize_save_dir(path):
     """Accept the win64_save folder itself or a parent of it (account folder, remote, ...)."""
     path = Path(path)
-    for tail in ((), SAVE_SUBDIR, (RISE_APP_ID, *SAVE_SUBDIR)):
+    for tail in (
+        (),
+        SAVE_SUBDIR,
+        (
+            RISE_APP_ID,
+            *SAVE_SUBDIR,
+        ),
+    ):
         candidate = path.joinpath(*tail)
         if (candidate / "data00-1.bin").is_file():
             return candidate
@@ -100,7 +120,12 @@ def running_blockers():
     """Names of running Steam / Rise processes (cross-platform, no third-party package)."""
     if os.name == "nt":
         output = subprocess.run(
-            args = ["tasklist", "/FO", "CSV", "/NH"],
+            args = [
+                "tasklist",
+                "/FO",
+                "CSV",
+                "/NH",
+            ],
             capture_output = True,
             text = True,
             check = False,
@@ -108,12 +133,20 @@ def running_blockers():
         return [name for name in WINDOWS_PROCESSES if f'"{name}"' in output]
     if sys.platform == "darwin":
         output = subprocess.run(
-            args = ["ps", "-A", "-o", "command"],
+            args = [
+                "ps",
+                "-A",
+                "-o",
+                "command",
+            ],
             capture_output = True,
             text = True,
             check = False,
         ).stdout.lower()
-        return [marker for marker in ("steam_osx", "monster hunter rise") if marker in output]
+        return [marker for marker in (
+            "steam_osx",
+            "monster hunter rise",
+        ) if marker in output]
     hits = []
     for proc in Path("/proc").glob("[0-9]*"):
         try:

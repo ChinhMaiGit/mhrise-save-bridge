@@ -78,7 +78,10 @@ def _read_array(reader):
     member_size = reader.u32()
     length = reader.u32()
     array_type = reader.i32()
-    if array_type not in (0, 1):
+    if array_type not in (
+        0,
+        1,
+    ):
         raise StreamError("unknown array kind")
     hashes = None
     if array_type == 1 and reader.peek() == ARRAY_HASH_MARK:
@@ -93,7 +96,10 @@ def _read_array(reader):
         elif member_type == TYPE_STRING:
             values.append(_read_string(reader = reader))
         else:
-            values.append(_read_sized(reader = reader, size = member_size))
+            values.append(_read_sized(
+                reader = reader,
+                size = member_size,
+            ))
     reader.align(size = 4)
     return {
         "mt": member_type,
@@ -122,22 +128,44 @@ def _read_class(reader):
         else:
             reader.align(size = 4)
             size = reader.u32()
-            value = (size, _read_sized(reader = reader, size = size))
+            value = (
+                size,
+                _read_sized(
+                    reader = reader,
+                    size = size,
+                ),
+            )
         reader.align(size = 4)
-        fields.append([field_hash, field_type, value])
-    return (class_hash, fields)
+        fields.append([
+            field_hash,
+            field_type,
+            value,
+        ])
+    return (
+        class_hash,
+        fields,
+    )
 
 
 def parse(data, origin):
-    reader = Reader(data = data, origin = origin)
+    reader = Reader(
+        data = data,
+        origin = origin,
+    )
     entries = []
     try:
         while reader.remaining() > 0:
             if reader.remaining() < 12 and not any(data[reader.pos:]):
                 break
             native_hash = reader.u32()
-            entries.append((native_hash, _read_class(reader = reader)))
-    except (struct.error, StreamError) as error:
+            entries.append((
+                native_hash,
+                _read_class(reader = reader),
+            ))
+    except (
+        struct.error,
+        StreamError,
+    ) as error:
         raise StreamError(f"cannot parse the class stream at offset {reader.pos}: {error}") from error
     return entries
 
@@ -184,13 +212,26 @@ def _write_array(writer, array):
             writer.u32(value = item)
     for value in array["vals"]:
         if array["at"] == 1:
-            _write_class(writer = writer, cls = value)
+            _write_class(
+                writer = writer,
+                cls = value,
+            )
         elif array["mt"] == TYPE_ARRAY:
-            _write_array(writer = writer, array = value)
+            _write_array(
+                writer = writer,
+                array = value,
+            )
         elif array["mt"] == TYPE_STRING:
-            _write_string(writer = writer, value = value)
+            _write_string(
+                writer = writer,
+                value = value,
+            )
         else:
-            _write_sized(writer = writer, size = array["ms"], value = value)
+            _write_sized(
+                writer = writer,
+                size = array["ms"],
+                value = value,
+            )
     writer.align(size = 4)
 
 
@@ -202,15 +243,28 @@ def _write_class(writer, cls):
         writer.u32(value = field_hash)
         writer.i32(value = field_type)
         if field_type == TYPE_ARRAY:
-            _write_array(writer = writer, array = value)
+            _write_array(
+                writer = writer,
+                array = value,
+            )
         elif field_type == TYPE_CLASS:
-            _write_class(writer = writer, cls = value)
+            _write_class(
+                writer = writer,
+                cls = value,
+            )
         elif field_type == TYPE_STRING:
-            _write_string(writer = writer, value = value)
+            _write_string(
+                writer = writer,
+                value = value,
+            )
         else:
             writer.align(size = 4)
             writer.u32(value = value[0])
-            _write_sized(writer = writer, size = value[0], value = value[1])
+            _write_sized(
+                writer = writer,
+                size = value[0],
+                value = value[1],
+            )
         writer.align(size = 4)
 
 
@@ -218,5 +272,8 @@ def encode(entries, origin):
     writer = Writer(origin = origin)
     for native_hash, cls in entries:
         writer.u32(value = native_hash)
-        _write_class(writer = writer, cls = cls)
+        _write_class(
+            writer = writer,
+            cls = cls,
+        )
     return bytes(writer.buf)

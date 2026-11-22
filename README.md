@@ -25,8 +25,9 @@ The Switch must be able to run homebrew; a save manager such as **Checkpoint** o
 
 1. On the Switch, open Checkpoint (or JKSV), pick **Monster Hunter Rise** (title id `0100E21013908000`) and back up
    your user's save. Wait for it to finish.
-2. Copy that backup from the SD card to the PC (card reader or USB cable). Checkpoint keeps it under
-   `switch/Checkpoint/saves/0100E21013908000 Monster Hunter Rise/<name of the backup>/`.
+2. Copy that backup from the SD card to the PC (card reader or USB cable). Checkpoint normally keeps
+   it on the SD card under `switch/Checkpoint/saves/`, in a folder named after the game, then a folder per backup
+   (JKSV and other managers use their own folders: look for the one that holds `data00-1.bin`).
 3. Check that the folder contains `data00-1.bin` and `data001Slot.bin`. Keep this folder; its path is asked below.
 
 ### 2. Prepare Steam

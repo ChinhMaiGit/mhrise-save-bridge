@@ -57,7 +57,10 @@ def open_save(data, steam_id64 = None):
             raise ContainerError("this is a PC save: a SteamID64 is needed to decrypt it")
         if not citrus.outer_hash_ok(data = data):
             raise ContainerError("file checksum is wrong: the save is damaged")
-        payload, curve_index, _, ok = citrus.decrypt_payload(body = data[16:-4], steam_id64 = steam_id64)
+        payload, curve_index, _, ok = citrus.decrypt_payload(
+            body = data[16:-4],
+            steam_id64 = steam_id64,
+        )
         return Opened(
             payload = payload,
             origin = PC_STREAM_ORIGIN,
@@ -87,7 +90,11 @@ def pack_pc(payload, steam_id64, curve_index):
         MAGIC
         + struct.pack("<II", PC_HEADER["version"], PC_HEADER["flags"])
         + bytes(4)
-        + citrus.encrypt_payload(payload = payload, steam_id64 = steam_id64, curve_index = curve_index)
+        + citrus.encrypt_payload(
+            payload = payload,
+            steam_id64 = steam_id64,
+            curve_index = curve_index,
+        )
     )
     body += bytes((-len(body)) % 4)
     return body + struct.pack("<I", murmur3_32(data = body))

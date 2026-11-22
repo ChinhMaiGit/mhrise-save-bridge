@@ -16,7 +16,7 @@ def murmur3_32(data, seed = 0xFFFFFFFF):
     h = seed
     whole = len(data) // 4 * 4
     for offset in range(0, whole, 4):
-        h ^= _mix(struct.unpack_from("<I", data, offset)[0])
+        h ^= _mix(k = struct.unpack_from("<I", data, offset)[0])
         h = ((h << 13) | (h >> 19)) & 0xFFFFFFFF
         h = (h * 5 + 0xE6546B64) & 0xFFFFFFFF
     tail = data[whole:]
@@ -24,7 +24,7 @@ def murmur3_32(data, seed = 0xFFFFFFFF):
     for position in range(len(tail) - 1, -1, -1):
         k ^= tail[position] << (8 * position)
     if tail:
-        h ^= _mix(k)
+        h ^= _mix(k = k)
     h ^= len(data)
     h ^= h >> 16
     h = (h * 0x85EBCA6B) & 0xFFFFFFFF

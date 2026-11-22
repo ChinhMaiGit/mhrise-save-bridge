@@ -2,7 +2,10 @@
 
 STEAM_ID64_BASE = 76561197960265728
 RISE_APP_ID = "1446780"
-SAVE_SUBDIR = ("remote", "win64_save")
+SAVE_SUBDIR = (
+    "remote",
+    "win64_save",
+)
 MAX_SLOTS = 3
 
 MAGIC = b"DSSS"
@@ -35,7 +38,10 @@ CHAR_PRICE = 100  # ElGamal-encoded key halves are multiplied by this before goi
 CLASS_SUMMARY = 0x520DE8DF  # data00-1: one per slot (class snow.data.<...> summary)
 CLASS_PROGRESS = 0x948B7B9D
 CLASS_GUILD_CARD = 0x44541321
-CLASS_PROJECTED = (0x95320424, 0x5766F30B)  # classes whose field lists differ Switch vs PC
+CLASS_PROJECTED = (
+    0x95320424,
+    0x5766F30B,
+)  # classes whose field lists differ Switch vs PC
 FIELD_GUID = 0xE40FC0CD
 FIELD_HUNTER_RANK = 0x5653C091
 FIELD_MASTER_RANK = 0x4E428685

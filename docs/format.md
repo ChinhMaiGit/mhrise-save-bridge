@@ -43,7 +43,7 @@ key16 | iv16 | 0x200 wrapped keys | 0x40000 data | 32-byte SHA3-256
 - Data = AES-128-CBC with the real key/iv, no padding. The SHA3 covers `key16 | iv16 | wrapped keys | plain[..0x3ffe0]`,
   with the last block zero-padded to full size.
 - Writing: fresh random block keys, ElGamal with a random scalar per half. A half can only be used when
-  `value * 100` is an x-coordinate on the curve (and the sqrt shortcut needs p mod 4 = 3), so the writer
+  `value * 100` is an x-coordinate on the curve, so the writer
   redraws until all four halves qualify.
 
 SteamID64 = 76561197960265728 + the account id that is the `userdata` folder name.
