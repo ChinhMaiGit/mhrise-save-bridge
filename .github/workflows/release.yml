@@ -1,0 +1,31 @@
+name: windows-exe
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run pytest -q
+      - name: Build the one-file exe
+        run: uv run pyinstaller --onefile --name mhrise-save-bridge packaging/entry.py --paths src
+      - name: Smoke test the exe
+        run: ./dist/mhrise-save-bridge.exe convert --help
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mhrise-save-bridge-windows
+          path: dist/mhrise-save-bridge.exe
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/mhrise-save-bridge.exe
